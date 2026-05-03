@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shoppinggate Taxonomy Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./taxonomy-review.css?v=2026-05-04-2" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Shoppinggate Taxonomy Review</p>
+          <h1>Tree to BCAT Dashboard</h1>
+          <p class="subtitle">Review the navigation tree and inspect every BCAT assigned to each L3.</p>
+        </div>
+        <div class="topbar-meta">
+          <div class="stat-pill">
+            <span class="eyebrow">L3s</span>
+            <strong id="l3Count">0</strong>
+          </div>
+          <div class="stat-pill">
+            <span class="eyebrow">Mapped BCATs</span>
+            <strong id="mappedCount">0</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar">
+        <input id="treeSearch" class="input" type="search" placeholder="Search L1, L2 or L3" />
+        <input id="cardSearch" class="input" type="search" placeholder="Global BCAT search: BCAT, Super Category, Category or Sub-Category" />
+      </section>
+
+      <main class="workspace">
+        <section class="panel panel-tree">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Navigation Tree</p>
+              <h2>Customer-Facing Hierarchy</h2>
+            </div>
+            <span id="treeHint" class="panel-meta">Select an L3 to inspect mapped BCATs</span>
+          </div>
+          <div id="treeRoot" class="panel-body tree-root"></div>
+        </section>
+
+        <section class="panel panel-cards">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Mapped BCATs</p>
+              <h2 id="detailTitle">Choose an L3</h2>
+            </div>
+            <div class="detail-meta">
+              <span id="detailCount" class="count-chip">0 BCATs</span>
+            </div>
+          </div>
+          <div class="panel-summary">
+            <p id="detailPath" class="detail-path">Select a leaf from the tree to load its assigned backend categories.</p>
+          </div>
+          <div id="cardGrid" class="panel-body card-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      window.__SNAPSHOT_URL__ = "./data/book3_mapping_snapshot_public.json?v=2026-05-04-2";
+    </script>
+    <script src="./taxonomy-review.js?v=2026-05-04-2"></script>
+  </body>
+</html>
