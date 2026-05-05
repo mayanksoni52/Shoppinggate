@@ -3,6 +3,7 @@ const SNAPSHOT_URL = window.__SNAPSHOT_URL__ || `./data/book3_mapping_snapshot.j
 const state = {
   taxonomy: [],
   rows: [],
+  mappedRows: [],
   groupedTree: new Map(),
   selectedNodeId: null,
   treeSearch: "",
@@ -30,7 +31,8 @@ async function initialize() {
   const response = await fetch(SNAPSHOT_URL, { cache: "no-store" });
   const snapshot = await response.json();
   state.taxonomy = snapshot.taxonomy;
-  state.rows = snapshot.backendRows.filter((row) => Array.isArray(row.mappingIds) && row.mappingIds.length);
+  state.rows = snapshot.backendRows || [];
+  state.mappedRows = state.rows.filter((row) => Array.isArray(row.mappingIds) && row.mappingIds.length);
   state.selectedNodeId = snapshot.taxonomy[0]?.nodeId ?? null;
 
   for (const node of state.taxonomy) {
@@ -75,7 +77,7 @@ function buildTree() {
 }
 
 function getMappedRowsForNode(nodeId) {
-  return state.rows.filter((row) => row.mappingIds.includes(nodeId));
+  return state.mappedRows.filter((row) => row.mappingIds.includes(nodeId));
 }
 
 function getVisibleTree() {
@@ -233,19 +235,19 @@ function renderCards() {
   if (query) {
     const rows = state.rows
       .filter((row) =>
-        [row.backendCategoryId, row.superCategory, row.category, row.subCategory]
+        [row.backendId, row.backendCategoryId, row.superCategory, row.category, row.subCategory, row.rowStatus]
           .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(query))
+          .some((value) => String(value).toLowerCase().includes(query))
       )
-      .sort((a, b) => a.backendCategoryId.localeCompare(b.backendCategoryId));
+      .sort((a, b) => String(a.backendId ?? "").localeCompare(String(b.backendId ?? "")));
 
-    elements.detailTitle.textContent = "Global BCAT Results";
-    elements.detailPath.textContent = `Showing matches across all mapped BCATs for "${query}".`;
-    elements.detailCount.textContent = `${rows.length} BCAT${rows.length === 1 ? "" : "s"}`;
+    elements.detailTitle.textContent = "Global Backend Results";
+    elements.detailPath.textContent = `Showing matches across all backend IDs for "${query}".`;
+    elements.detailCount.textContent = `${rows.length} row${rows.length === 1 ? "" : "s"}`;
     elements.treeHint.textContent = selectedNode ? `${selectedNode.nodeId} selected` : "Tree selection preserved";
 
     if (!rows.length) {
-      elements.cardGrid.innerHTML = `<div class="empty-state">No BCATs matched the global search.</div>`;
+      elements.cardGrid.innerHTML = `<div class="empty-state">No backend rows matched the global search.</div>`;
       return;
     }
 
@@ -253,11 +255,13 @@ function renderCards() {
       .map(
         (row) => `
           <article class="bcat-card">
-            <span class="bcat-id">${escapeHtml(row.backendCategoryId)}</span>
+            <span class="bcat-id">${escapeHtml(row.backendId ?? "No Backend ID")}</span>
             <h3>${escapeHtml(row.subCategory || "Unnamed Sub-Category")}</h3>
+            <p><strong>Legacy BCAT:</strong> ${escapeHtml(row.backendCategoryId || "-")}</p>
             <p><strong>Super Category:</strong> ${escapeHtml(row.superCategory || "-")}</p>
             <p><strong>Category:</strong> ${escapeHtml(row.category || "-")}</p>
             <p><strong>Sub-Category:</strong> ${escapeHtml(row.subCategory || "-")}</p>
+            <p><strong>Status:</strong> ${escapeHtml(row.rowStatus || (row.mappingIds?.length ? "Mapped Current Row" : "Additional Tech Row"))}</p>
             <p><strong>Mapped L3:</strong> ${escapeHtml(
               [row.l1, row.l2, row.l3].filter(Boolean).join(" / ") || "-"
             )}</p>
@@ -276,11 +280,11 @@ function renderCards() {
     return;
   }
 
-  const rows = getMappedRowsForNode(selectedNode.nodeId).sort((a, b) => a.backendCategoryId.localeCompare(b.backendCategoryId));
+  const rows = getMappedRowsForNode(selectedNode.nodeId).sort((a, b) => String(a.backendId ?? "").localeCompare(String(b.backendId ?? "")));
 
   elements.detailTitle.textContent = selectedNode.l3;
   elements.detailPath.textContent = `${selectedNode.l1} / ${selectedNode.l2} / ${selectedNode.l3} / ${selectedNode.nodeId}`;
-  elements.detailCount.textContent = `${rows.length} BCAT${rows.length === 1 ? "" : "s"}`;
+  elements.detailCount.textContent = `${rows.length} backend ID${rows.length === 1 ? "" : "s"}`;
   elements.treeHint.textContent = `${selectedNode.nodeId} selected`;
 
   if (!rows.length) {
@@ -292,11 +296,13 @@ function renderCards() {
     .map(
       (row) => `
         <article class="bcat-card">
-          <span class="bcat-id">${escapeHtml(row.backendCategoryId)}</span>
+          <span class="bcat-id">${escapeHtml(row.backendId ?? "No Backend ID")}</span>
           <h3>${escapeHtml(row.subCategory || "Unnamed Sub-Category")}</h3>
+          <p><strong>Legacy BCAT:</strong> ${escapeHtml(row.backendCategoryId || "-")}</p>
           <p><strong>Super Category:</strong> ${escapeHtml(row.superCategory || "-")}</p>
           <p><strong>Category:</strong> ${escapeHtml(row.category || "-")}</p>
           <p><strong>Sub-Category:</strong> ${escapeHtml(row.subCategory || "-")}</p>
+          <p><strong>Status:</strong> ${escapeHtml(row.rowStatus || "Mapped Current Row")}</p>
         </article>
       `
     )
